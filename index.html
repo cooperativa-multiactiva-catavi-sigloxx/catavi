@@ -65,48 +65,96 @@
   .btn-explorar {
     pointer-events:auto; margin-top:8px; cursor:pointer; border:1px solid rgba(255,255,255,.14); border-radius:999px;
     font-family:'Oswald','Arial Narrow',sans-serif; font-size:15px; font-weight:500; letter-spacing:.6px; text-transform:uppercase;
-    color:#fff; background:rgba(0,0,0,.45); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); padding:13px 30px;
+    color:#fff; background:rgba(0,0,0,.6);  padding:13px 30px;
     transition:background .2s;
   }
   .btn-explorar:hover { background:rgba(0,0,0,.65); }
-  .b-redondo, .btn-volver {
+  .btn-volver {
     width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer;
-    color:#fff; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.14); border-radius:50%;
-    -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+    color:#fff; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.14); border-radius:50%;
+    
     transition:background .2s;
   }
-  .b-redondo:hover, .btn-volver:hover { background:rgba(0,0,0,.65); }
+  .btn-volver:hover { background:rgba(0,0,0,.65); }
   .btn-volver { position:fixed; top:18px; left:18px; z-index:8; display:none; }
   body.explorando .btn-volver { display:flex; }
-  .b-redondo svg, .btn-volver svg, .panel svg { width:18px; height:18px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .btn-volver svg { width:18px; height:18px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
   body.explorando .hero, body.explorando #escudo { opacity:0 !important; pointer-events:none; transition:opacity .7s ease, transform 1.1s ease; }
 
-  /* Barra de botones (arriba a la derecha): galería · momento del día · menú */
+  /* ===== Barra de navegación (arriba a la derecha): pestañas con menú desplegable ===== */
   .nav {
-    position:fixed; top:20px; right:24px; z-index:8; display:flex; gap:10px;
+    position:fixed; top:20px; right:24px; z-index:8;
     opacity:0; transition:opacity 1.2s ease 1.2s;
   }
   .nav.show { opacity:1; }
-  .caja { position:relative; }
-  .panel {
-    display:none; position:absolute; top:calc(100% + 10px); right:0; min-width:180px; padding:6px;
-    flex-direction:column; gap:2px; background:rgba(0,0,0,.5); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
-    border:1px solid rgba(255,255,255,.14); border-radius:16px;
+
+  .barra {
+    display:flex; gap:4px; padding:4px;
+    background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.16); border-radius:999px;
   }
-  .panel.abierto { display:flex; }
-  .panel a, .panel .op {
-    display:flex; align-items:center; gap:12px; padding:10px 14px; border:0; border-radius:10px;
+  .tab {
+    display:flex; align-items:center; gap:7px; padding:9px 15px; border:0; border-radius:999px;
+    background:none; cursor:pointer; color:rgba(255,255,255,.72);
+    font-family:'Oswald','Arial Narrow',sans-serif; font-size:14px; font-weight:500; line-height:1;
+    letter-spacing:.6px; text-transform:uppercase; white-space:nowrap;
+    transition:background .2s, color .2s;
+  }
+  .tab:hover, .tab.sel { background:rgba(255,255,255,.18); color:#fff; }
+  .tab svg { width:16px; height:16px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .tab .chev { transition:transform .2s ease; }
+  .tab.sel .chev { transform:rotate(180deg); }
+
+  /* Panel que aparece debajo, con su flechita que sigue a la pestaña activa */
+  .nav-panel {
+    position:absolute; top:calc(100% + 16px); right:0; width:min(310px, calc(100vw - 24px)); padding:10px;
+    background:rgba(14,18,28,.9);
+    border:1px solid rgba(255,255,255,.18); border-radius:16px; box-shadow:0 14px 40px rgba(0,0,0,.35);
+    opacity:0; visibility:hidden; transform:translateY(8px);
+    transition:opacity .2s ease, transform .2s ease, visibility 0s linear .2s;
+  }
+  .nav-panel.abierto {
+    opacity:1; visibility:visible; transform:none;
+    transition:opacity .2s ease, transform .2s ease;
+    background:rgba(14,18,28,.55);
+    -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);   /* solo mientras está abierto */
+  }
+  .nav-panel::before {                  /* puente invisible: el menú no se cierra al cruzar el espacio */
+    content:''; position:absolute; left:0; right:0; top:-18px; height:18px;
+  }
+  .nub {
+    position:absolute; top:-8px; left:0; width:14px; height:14px; margin-left:-7px;
+    background:rgba(14,18,28,.8); border-top:1px solid rgba(255,255,255,.18); border-left:1px solid rgba(255,255,255,.18);
+    clip-path:polygon(0 0, 100% 0, 0 100%);
+    border-top-left-radius:3px; transform:rotate(45deg);
+    transition:left .25s ease;
+  }
+  .vistas { overflow:hidden; border-radius:10px; }
+  .vista { display:none; flex-direction:column; gap:2px; }
+  .vista.sel { display:flex; }
+  .vista.entra-l { animation:entraL .25s ease both; }
+  .vista.entra-r { animation:entraR .25s ease both; }
+  @keyframes entraL { from { opacity:0; transform:translateX(60px); }  to { opacity:1; transform:none; } }
+  @keyframes entraR { from { opacity:0; transform:translateX(-60px); } to { opacity:1; transform:none; } }
+
+  .fila {
+    display:flex; align-items:center; gap:12px; width:100%; padding:10px 12px; border:0; border-radius:10px;
     background:none; cursor:pointer; text-align:left; text-decoration:none; color:#fff;
-    font-family:'Oswald','Arial Narrow',sans-serif; font-size:14px; font-weight:500; letter-spacing:.6px; text-transform:uppercase;
+    transition:background .15s;
   }
-  .panel a:hover, .panel .op:hover { background:rgba(255,255,255,.14); }
-  .panel .op.activo { background:rgba(255,255,255,.2); }
+  .fila:hover { background:rgba(255,255,255,.12); }
+  .fila.activo { background:rgba(255,255,255,.1); }
+  .fila svg { width:20px; height:20px; flex:none; fill:none; stroke:#9fd3ff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .fila .txt { display:flex; flex-direction:column; gap:4px; flex:1; min-width:0; }
+  .fila b { font-family:'Oswald','Arial Narrow',sans-serif; font-size:14px; font-weight:500; line-height:1; letter-spacing:.6px; text-transform:uppercase; }
+  .fila small { font-family:'Lato','Segoe UI',Arial,sans-serif; font-size:12px; line-height:1.3; color:rgba(255,255,255,.78); }
+  .fila .check { width:8px; height:8px; flex:none; border-radius:50%; background:#7cc8ff; opacity:0; transition:opacity .2s; }
+  .fila.activo .check { opacity:1; }
 
   .desierto-hint {
     position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:6;
     display:flex; align-items:center; gap:5px;
     font-family:'Oswald','Arial Narrow',sans-serif; font-size:14px; font-weight:500; letter-spacing:.5px; text-transform:uppercase;
-    color:#fff; background:rgba(0,0,0,.45); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.14);
+    color:#fff; background:rgba(0,0,0,.6);  border:1px solid rgba(255,255,255,.14);
     padding:9px 20px 9px 10px; border-radius:999px; white-space:nowrap;
     opacity:0; transition:opacity .6s ease; pointer-events:none;
   }
@@ -122,7 +170,8 @@
 
   /* Celular / pantalla angosta: texto arriba, escudo abajo al centro */
   @media (max-width: 900px) {
-    .nav { top:12px; right:12px; gap:6px; }
+    .nav { top:12px; right:12px; }
+    .tab { padding:9px 12px; }
     .hero { left:20px; top:70px; width:calc(100% - 40px); transform:translateY(-10px); }
     .hero.show { transform:none; }
     .hero::before { inset:-70px -40px; background:radial-gradient(ellipse closest-side at 50% 50%, rgba(4,8,15,.75) 0%, rgba(4,8,15,.6) 60%, rgba(4,8,15,0) 100%); }
@@ -149,25 +198,63 @@
 
 <button class="btn-volver" id="btn-volver" aria-label="Volver" title="Volver"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg></button>
 
+<!-- Barra de navegación: dos pestañas con menú desplegable -->
 <div class="nav" id="nav">
-  <button type="button" class="b-redondo" id="btn-galeria" aria-label="Galería" title="Galería"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg></button>
-  <div class="caja">
-    <button type="button" class="b-redondo" id="btn-tiempo" aria-label="Momento del día" title="Momento del día" aria-expanded="false"><svg viewBox="0 0 24 24" id="icono-tiempo"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
-    <div class="panel" id="panel-tiempo">
-      <button type="button" class="op activo" data-tema="claro"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Día</button>
-      <button type="button" class="op" data-tema="atardecer"><svg viewBox="0 0 24 24"><path d="M6 17a6 6 0 0 1 12 0"/><path d="M2 17h20M12 6v3M4.9 9.9l1.6 1.6M19.1 9.9l-1.6 1.6M7 21h10"/></svg>Atardecer</button>
-      <button type="button" class="op" data-tema="oscuro"><svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>Noche</button>
+  <div class="barra">
+    <button type="button" class="tab" id="tab-secciones" aria-expanded="false" aria-controls="nav-panel">
+      <span>Secciones</span>
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <button type="button" class="tab" id="tab-tiempo" aria-expanded="false" aria-controls="nav-panel">
+      <svg id="icono-tiempo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <span>Momento</span>
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+  </div>
+
+  <div class="nav-panel" id="nav-panel">
+    <span class="nub" id="nub"></span>
+    <div class="vistas">
+
+      <!-- Pestaña 1: secciones del sitio -->
+      <div class="vista" id="vista-secciones">
+        <a class="fila" href="historia/historia.html">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <span class="txt"><b>Historia</b><small>Cómo nació la cooperativa</small></span>
+        </a>
+        <a class="fila" href="3dGaleria/galeria.html">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg>
+          <span class="txt"><b>Galería</b><small>Imágenes y modelos 3D</small></span>
+        </a>
+        <a class="fila" href="3dExtraccion/extraccion.html">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+          <span class="txt"><b>Procesos</b><small>Los equipos de la planta</small></span>
+        </a>
+      </div>
+
+      <!-- Pestaña 2: momento del día -->
+      <div class="vista" id="vista-tiempo">
+        <button type="button" class="fila op activo" data-tema="claro">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          <span class="txt"><b>Día</b><small>Cielo despejado</small></span>
+          <span class="check"></span>
+        </button>
+        <button type="button" class="fila op" data-tema="atardecer">
+          <svg viewBox="0 0 24 24"><path d="M6 17a6 6 0 0 1 12 0"/><path d="M2 17h20M12 6v3M4.9 9.9l1.6 1.6M19.1 9.9l-1.6 1.6M7 21h10"/></svg>
+          <span class="txt"><b>Atardecer</b><small>Luz cálida y luces tenues</small></span>
+          <span class="check"></span>
+        </button>
+        <button type="button" class="fila op" data-tema="oscuro">
+          <svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+          <span class="txt"><b>Noche</b><small>Luna y luces encendidas</small></span>
+          <span class="check"></span>
+        </button>
+      </div>
+
     </div>
   </div>
-  <div class="caja">
-    <button type="button" class="b-redondo" id="btn-menu" aria-label="Menú" title="Menú" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-    <nav class="panel" id="panel-menu">
-      <a href="historia/historia.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Historia</a>
-      <a href="3dGaleria/galeria.html"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg>Galería</a>
-      <a href="3dExtraccion/extraccion.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>Procesos</a>
-    </nav>
-  </div>
 </div>
+
 <canvas id="escudo"></canvas>
 <div class="desierto-hint" id="desierto-hint"><span class="tecla">W</span><span class="tecla">A</span><span class="tecla">S</span><span class="tecla">D</span><span>o flechas para caminar</span></div>
 
@@ -203,39 +290,87 @@
     if (window.Desierto) window.Desierto.volver();
   });
 
-  // Menú y momento del día (día · atardecer · noche)
+  // Barra de navegación: pestañas con menú desplegable animado
+  // (se abre al pasar el mouse o con clic/toque; la flechita y el contenido se deslizan entre pestañas)
   (function () {
-    var btnMenu = document.getElementById('btn-menu'), panelMenu = document.getElementById('panel-menu');
-    var btnTiempo = document.getElementById('btn-tiempo'), panelTiempo = document.getElementById('panel-tiempo');
+    var nav = document.getElementById('nav');
+    var panel = document.getElementById('nav-panel');
+    var nub = document.getElementById('nub');
     var iconoTiempo = document.getElementById('icono-tiempo');
+    var tabs = [document.getElementById('tab-secciones'), document.getElementById('tab-tiempo')];
+    var vistas = [document.getElementById('vista-secciones'), document.getElementById('vista-tiempo')];
+    var sel = -1;          // pestaña abierta (-1 = ninguna)
+    var tipo = 'mouse';    // cómo se usó por última vez: 'mouse', 'touch', 'pen' o 'teclado'
+
+    function moverNub(i) {
+      var t = tabs[i].getBoundingClientRect();
+      var p = panel.getBoundingClientRect();
+      nub.style.left = (t.left + t.width / 2 - p.left) + 'px';
+    }
+
+    function abrir(i) {
+      if (i === sel) return;
+      var previo = sel;
+      sel = i;
+
+      tabs.forEach(function (t, k) {
+        t.classList.toggle('sel', k === i);
+        t.setAttribute('aria-expanded', k === i ? 'true' : 'false');
+      });
+
+      vistas.forEach(function (v, k) {
+        v.classList.remove('sel', 'entra-l', 'entra-r');
+        if (k !== i) return;
+        void v.offsetWidth;                      // reinicia la animación
+        v.classList.add('sel');
+        if (previo !== -1) v.classList.add(previo > i ? 'entra-r' : 'entra-l');
+      });
+
+      panel.classList.add('abierto');
+
+      if (previo === -1) {                       // primera apertura: la flecha aparece directo en su sitio
+        nub.style.transition = 'none';
+        moverNub(i);
+        void nub.offsetWidth;
+        nub.style.transition = '';
+      } else {
+        moverNub(i);                             // entre pestañas: la flecha se desliza
+      }
+    }
 
     function cerrar() {
-      panelMenu.classList.remove('abierto');
-      panelTiempo.classList.remove('abierto');
-      btnMenu.setAttribute('aria-expanded', 'false');
-      btnTiempo.setAttribute('aria-expanded', 'false');
+      if (sel === -1) return;
+      sel = -1;
+      tabs.forEach(function (t) {
+        t.classList.remove('sel');
+        t.setAttribute('aria-expanded', 'false');
+      });
+      panel.classList.remove('abierto');
     }
-    function alternar(panel, boton) {
-      var estabaAbierto = panel.classList.contains('abierto');
-      cerrar();
-      if (!estabaAbierto) {
-        panel.classList.add('abierto');
-        boton.setAttribute('aria-expanded', 'true');
-      }
-      boton.blur();   // para que Enter/E sigan sirviendo para el juego
-    }
-    btnMenu.addEventListener('click', function (e) { e.stopPropagation(); alternar(panelMenu, btnMenu); });
-    btnTiempo.addEventListener('click', function (e) { e.stopPropagation(); alternar(panelTiempo, btnTiempo); });
-    document.addEventListener('click', function (e) { if (!e.target.closest('.caja')) cerrar(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') cerrar(); });
 
-    var opciones = panelTiempo.querySelectorAll('.op');
+    tabs.forEach(function (t, i) {
+      t.addEventListener('pointerdown', function (e) { tipo = e.pointerType || 'mouse'; });
+      t.addEventListener('keydown', function () { tipo = 'teclado'; });
+      t.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') abrir(i); });
+      t.addEventListener('click', function () {
+        if (sel === i && tipo !== 'mouse') cerrar(); else abrir(i);
+        if (tipo !== 'teclado') t.blur();        // para que Enter/E sigan sirviendo para el juego
+      });
+    });
+
+    nav.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') cerrar(); });
+    document.addEventListener('pointerdown', function (e) { if (!nav.contains(e.target)) cerrar(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') cerrar(); });
+    window.addEventListener('resize', function () { if (sel !== -1) moverNub(sel); });
+
+    // Momento del día (día · atardecer · noche)
+    var opciones = panel.querySelectorAll('.op');
     opciones.forEach(function (op) {
       op.addEventListener('click', function () {
         if (window.Desierto) window.Desierto.setTema(op.getAttribute('data-tema'));
         opciones.forEach(function (o) { o.classList.remove('activo'); });
         op.classList.add('activo');
-        iconoTiempo.innerHTML = op.querySelector('svg').innerHTML;
+        iconoTiempo.innerHTML = op.querySelector('svg').innerHTML;   // la pestaña muestra el icono del momento elegido
         cerrar();
         op.blur();
       });
