@@ -3,18 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxia Minera - Cooperativa Catavi Siglo XX</title>
+    <title>Del mineral al estaño - Cooperativa Catavi Siglo XX</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Oswald:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="extraccion.css">
 </head>
 <body>
     <div id="canvas-container"></div>
 
-    <a href="../CATAVI.html?skipIntro=1" id="back-button" title="Volver a la página principal">
+   <a href="../index.html" id="back-button" title="Volver a la página principal">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
         <span>Volver</span>
     </a>
+
+    <!-- Recorrido: una estación por paso del proceso (se llena desde extraccion.js) -->
+    <div id="ruta" aria-label="Estaciones del proceso"></div>
 
     <div id="help-button" title="Ayuda">
         <span class="helmet-icon">?</span>
@@ -23,26 +29,23 @@
 
     <div class="controls">
         <div><strong>CONTROLES:</strong></div>
-        <div>W / ↑ - Adelante</div>
-        <div>S / ↓ - Atras</div>
-        <div>A / ← - Izquierda</div>
-        <div>D / → - Derecha</div>
-        <div>Q - Girar izquierda</div>
-        <div>E - Girar derecha</div>
-        <div>MOUSE - Mirar alrededor</div>
-        <div>SCROLL - Acercar/Alejar</div>
-        <div>ESPACIO - Cambiar estacion</div>
+        
+                <div>A / ← - Girar a la izquierda</div>
+        <div>D / → - Girar a la derecha</div>
+        <div>F - Ver información de la estación</div>
+        <div>1 a 6 / ESPACIO - Ir a una estación</div>
+        <div>L - Linterna del casco</div>
+        <div>ESC - Cerrar la tarjeta</div>
     </div>
 
-    <div class="station-info" id="station-info">
-        <h3 id="station-title">Estacion</h3>
-        <p id="station-description">Descripcion</p>
-    </div>
+    <div id="hint">Sigue el camino amarillo: es el recorrido del mineral</div>
 
-    <div class="loading" id="loading">Cargando galaxia minera...</div>
+    <div class="loading" id="loading">Cargando la planta...</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script type="module" src="extraccion.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.6.9/umd/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+    <script src="extraccion.js"></script>
 </body>
 </html>
