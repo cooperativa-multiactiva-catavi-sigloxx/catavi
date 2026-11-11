@@ -1068,15 +1068,6 @@
   // ================== TRACTOR Y VOLQUETA 2 ==================
   function cargarVehiculo(ruta, tamano, x, z, giro, bajar,vertical) {
     cargarModelo(ruta).then(function (obj) {
-       // vertical: si el modelo es más largo en X, lo gira 90° para que su lado largo quede de adelante hacia atrás (eje Z)
-      if (vertical) {
-        const t0 = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
-
-        if (t0.x > t0.z) {
-          obj.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), Math.PI / 2);
-          obj.updateMatrixWorld(true);
-        }
-      }
      
       const tam = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
       const dimension = Math.max(tam.x, tam.z);
@@ -1133,7 +1124,7 @@
 
     cargarVehiculo(RUTA_PARRILA, TAMANO_PARRILA, POS_PARRILA_X, POS_PARRILA_Z, GIRO_PARRILA, BAJAR_PARRILA);
 
-        cargarVehiculo(RUTA_BUS1, TAMANO_BUS1, POS_BUS1_X, POS_BUS1_Z, GIRO_BUS1, BAJAR_BUS1, VERTICAL_BUS1);
+      cargarVehiculo(RUTA_BUS1, TAMANO_BUS1, POS_BUS1_X, POS_BUS1_Z, GIRO_BUS1, BAJAR_BUS1);
   // ================== CALAMINAS (a los costados de los medioFondo) ==================
   // Cada modelo se prepara una vez y luego se clona en cada posición.
   function prepararCalamina(ruta, tamano, bajar) {
