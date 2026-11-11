@@ -1065,7 +1065,7 @@
     estado('FALLÓ ' + RUTA_MEDIO_FONDO, false);
   });
 
-  // ================== TRACTOR Y VOLQUETA 2 ==================
+  // ================== ---TRACTOR Y VOLQUETA 2 ==================
   function cargarVehiculo(ruta, tamano, x, z, giro, bajar,vertical) {
     cargarModelo(ruta).then(function (obj) {
      
@@ -1075,7 +1075,6 @@
       if (dimension <= 0) {
         throw new Error('El modelo ' + ruta + ' no tiene dimensiones válidas.');
       }
-
       obj.scale.multiplyScalar(tamano / dimension);
       obj.updateMatrixWorld(true);
 
