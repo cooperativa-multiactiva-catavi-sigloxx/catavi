@@ -12,7 +12,15 @@
   const RUTA_MONTANAS = './MONTAÑAS.png';
   const RUTA_PERSONAJE = './P CAMINANDO.fbx';
 
-  const TAMANO = 2000, REPETICIONES = 100;
+    // ---- Tamaño del mundo: el suelo y hasta dónde puedes caminar ----
+  // Cada número es una orilla del mundo (mismas medidas que x y z de los modelos).
+  const MUNDO_X_MIN = -300, MUNDO_X_MAX = 175;   // izquierda (-) y derecha (+)
+  const MUNDO_Z_MIN = -120, MUNDO_Z_MAX = 270;   // atrás (-) y adelante (+)
+  const TAMANO_LOSETA = 20;                      // tamaño de cada repetición de la textura de arena
+  const MARGEN_BORDE = 10;                       // el personaje se detiene a esta distancia de la orilla
+  const ANCHO_MUNDO = MUNDO_X_MAX - MUNDO_X_MIN;
+  const LARGO_MUNDO = MUNDO_Z_MAX - MUNDO_Z_MIN;
+
   const RADIO_FONDO = 900, ALTO_FONDO = 460, BAJAR_FONDO = 100;
   const VELOCIDAD = 8, GIRO = 2.2;
 
@@ -56,7 +64,7 @@
   const HUECO_BUS1 = 4;                  // espacio entre la volqueta y el bus
     const LADO_BUS1 = 1;                   // 1 = DELANTE de la volqueta (número mayor de Z); -1 = detrás
   const VERTICAL_BUS1 = true;            // true = el bus queda de adelante hacia atrás; false = a lo ancho                // -1 = hacia el número menor de Z (MÁS ATRÁS, como en el resto del archivo); 1 = hacia el otro lado
-  const POS_BUS1_X = POS_VOLQUETA_X;     // DERECHA (+) o IZQUIERDA (-)
+  const POS_BUS1_X = -9;     // DERECHA (+) o IZQUIERDA (-)
   const POS_BUS1_Z = POS_VOLQUETA_Z + LADO_BUS1 * (TAMANO_VOLQUETA / 2 + HUECO_BUS1 + TAMANO_BUS1 / 2);
   const GIRO_BUS1 = GIRO_VOLQUETA;       // hacia dónde mira (Math.PI = media vuelta)
   const BAJAR_BUS1 = 0;
@@ -360,7 +368,7 @@
     RUTA_SUELO,
     (tex) => {
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(REPETICIONES, REPETICIONES);
+            tex.repeat.set(ANCHO_MUNDO / TAMANO_LOSETA, LARGO_MUNDO / TAMANO_LOSETA);
       tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
       tex.encoding = THREE.sRGBEncoding;
       matSuelo.map = tex;
@@ -373,14 +381,21 @@
     }
   );
 
-  const suelo = new THREE.Mesh(
-    new THREE.PlaneGeometry(TAMANO, TAMANO),
+    const suelo = new THREE.Mesh(
+    new THREE.PlaneGeometry(ANCHO_MUNDO, LARGO_MUNDO),
     matSuelo
   );
   suelo.rotation.x = -Math.PI / 2;
+  suelo.position.set((MUNDO_X_MIN + MUNDO_X_MAX) / 2, 0, (MUNDO_Z_MIN + MUNDO_Z_MAX) / 2);
   suelo.receiveShadow = true;
   scene.add(suelo);
 
+  // Suelo lejano del color de la niebla: así la orilla del mundo no se nota
+  const matHorizonte = new THREE.MeshBasicMaterial({ color: 0xc9b8a0, fog: false });
+  const horizonte = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), matHorizonte);
+  horizonte.rotation.x = -Math.PI / 2;
+  horizonte.position.set(suelo.position.x, -0.4, suelo.position.z);
+  scene.add(horizonte);
   // ================== FONDO DE MONTAÑAS ==================
   const matFondo = new THREE.MeshBasicMaterial({
     color: 0xffffff,
@@ -550,6 +565,7 @@
     scene.background.copy(mezcla.cielo);
     matFondo.color.copy(mezcla.tinte);
     scene.fog.color.copy(fogBase).multiply(mezcla.tinte);
+        matHorizonte.color.copy(scene.fog.color);
 
     hemi.intensity = mezcla.hemi;
     sol.intensity = mezcla.sol;
@@ -1812,7 +1828,7 @@
   });
 
   let angulo = 0;
-  const LIMITE = TAMANO / 2 - 20;
+
 
   // ================== TARJETAS DE INFORMACIÓN: ESTILOS ==================
   const estilo = document.createElement('style');
@@ -2430,16 +2446,16 @@
       const dx = Math.sin(angulo);
       const dz = Math.cos(angulo);
 
-      jugador.position.x = THREE.MathUtils.clamp(
+            jugador.position.x = THREE.MathUtils.clamp(
         jugador.position.x + dx * avance * VELOCIDAD * dt,
-        -LIMITE,
-        LIMITE
+        MUNDO_X_MIN + MARGEN_BORDE,
+        MUNDO_X_MAX - MARGEN_BORDE
       );
 
       jugador.position.z = THREE.MathUtils.clamp(
         jugador.position.z + dz * avance * VELOCIDAD * dt,
-        -LIMITE,
-        LIMITE
+        MUNDO_Z_MIN + MARGEN_BORDE,
+        MUNDO_Z_MAX - MARGEN_BORDE
       );
 
       if (mixer) {
