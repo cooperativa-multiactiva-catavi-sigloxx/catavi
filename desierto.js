@@ -2653,7 +2653,6 @@
         for (const k in teclas) teclas[k] = false;
       }
     },
-
     setTema(nombre) {
       tema = TEMAS[nombre] || TEMAS.claro;
     }
