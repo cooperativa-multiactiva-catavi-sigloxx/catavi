@@ -66,7 +66,7 @@
   const TAMANO_BUS1 = 22;                // TAMAÑO: más grande = número mayor
   const HUECO_BUS1 = 4;                  // espacio entre la volqueta y el bus
     const LADO_BUS1 = 1;                   // 1 = DELANTE de la volqueta (número mayor de Z); -1 = detrás
-  const VERTICAL_BUS1 = true;            // true = el bus queda de adelante hacia atrás; false = a lo ancho                // -1 = hacia el número menor de Z (MÁS ATRÁS, como en el resto del archivo); 1 = hacia el otro lado
+  const VERTICAL_BUS1 = true;            // true= el bus queda de adelante hacia atrás; false = a lo ancho                // -1 = hacia el número menor de Z (MÁS ATRÁS, como en el resto del archivo); 1 = hacia el otro lado
   const POS_BUS1_X = -9 - DESPLAZAR_IZQUIERDA;     // DERECHA (+) o IZQUIERDA (-)
   const POS_BUS1_Z = POS_VOLQUETA_Z + LADO_BUS1 * (TAMANO_VOLQUETA / 2 + HUECO_BUS1 + TAMANO_BUS1 / 2);
   const GIRO_BUS1 = GIRO_VOLQUETA;       // hacia dónde mira (Math.PI = media vuelta)
