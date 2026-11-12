@@ -5,7 +5,7 @@
    ===================================================================== */
 (function () {
   'use strict';
-  console.log('desierto.js VERSION 17 cargada');
+  console.log('desierto.js VERSION 20 cargada');
 
   // ================== CONFIGURACIÓN ==================
   const RUTA_SUELO = './TEXTURA DE ARENA.jpg';
@@ -20,7 +20,10 @@
   const MARGEN_BORDE = 10;                       // el personaje se detiene a esta distancia de la orilla
   const ANCHO_MUNDO = MUNDO_X_MAX - MUNDO_X_MIN;
   const LARGO_MUNDO = MUNDO_Z_MAX - MUNDO_Z_MIN;
-
+    // ---- Mover a la derecha todos los modelos del lado derecho ----
+  const DESPLAZAR_DERECHA = 12;   // unidades hacia la derecha (+). Más grande = más a la derecha; 0 = como estaba
+    // ---- Mover a la izquierda todos los modelos del lado izquierdo ----
+  const DESPLAZAR_IZQUIERDA = 8;   // unidades hacia la izquierda (-). Más grande = más a la izquierda; 0 = como estaba
   const RADIO_FONDO = 900, ALTO_FONDO = 460, BAJAR_FONDO = 100;
   const VELOCIDAD = 8, GIRO = 2.2;
 
@@ -29,8 +32,8 @@
 
   // ---- Casas ----
   const CASAS = ['./CASA 1.glb', './CASA 2.glb', './CASA IZQUIERDA.glb', './CASA DERECHA.glb', './CASA 3.glb'];
-  const TAMANO_POR_MODELO = [25, 25, 35, 25, 25];
-  const GIRO_EXTRA_POR_MODELO = [Math.PI, 0, 0, Math.PI, 0];
+  const TAMANO_POR_MODELO = [25, 25, 35, 30, 25];
+  const GIRO_EXTRA_POR_MODELO = [Math.PI, 0, 0, -Math.PI/2, 0];
   const ALTURA_EXTRA_POR_MODELO = [0, 0, 0, 0, 0];
 
   const DISTANCIA_CALLE = 26;
@@ -38,11 +41,11 @@
   const ROTACION_IZQ = 0, ROTACION_DER = Math.PI;
   const ATRAS_CASA_IZQUIERDA = 8, DERECHA_CASA_IZQUIERDA = 6;
 
-  const ADELANTE_CASA_DERECHA = -20;
+  const ADELANTE_CASA_DERECHA = -25;
   const ADELANTE_CASA_3 = 25;
 
   const ADELANTE_CASA_GRANDE = 45;
-  const X_CASA_GRANDE = -DISTANCIA_CALLE;
+  const X_CASA_GRANDE = -DISTANCIA_CALLE - DESPLAZAR_IZQUIERDA;
   const Z_CASA_GRANDE = Z_CASA_IZQ + ADELANTE_CASA_GRANDE;
   const ROTACION_CASA_GRANDE = ROTACION_IZQ;
   const RUTA_CASA_GRANDE = './CASA GRANDE.glb';
@@ -64,10 +67,11 @@
   const HUECO_BUS1 = 4;                  // espacio entre la volqueta y el bus
     const LADO_BUS1 = 1;                   // 1 = DELANTE de la volqueta (número mayor de Z); -1 = detrás
   const VERTICAL_BUS1 = true;            // true = el bus queda de adelante hacia atrás; false = a lo ancho                // -1 = hacia el número menor de Z (MÁS ATRÁS, como en el resto del archivo); 1 = hacia el otro lado
-  const POS_BUS1_X = -9;     // DERECHA (+) o IZQUIERDA (-)
+  const POS_BUS1_X = -9 - DESPLAZAR_IZQUIERDA;     // DERECHA (+) o IZQUIERDA (-)
   const POS_BUS1_Z = POS_VOLQUETA_Z + LADO_BUS1 * (TAMANO_VOLQUETA / 2 + HUECO_BUS1 + TAMANO_BUS1 / 2);
   const GIRO_BUS1 = GIRO_VOLQUETA;       // hacia dónde mira (Math.PI = media vuelta)
   const BAJAR_BUS1 = 0;
+
   // ---- Medio fondo ----
   const RUTA_MEDIO_FONDO = './medioFondo.glb';
   const TAMANO_MEDIO_FONDO = 100;
@@ -80,7 +84,7 @@
   const RUTA_PARRILA = './parrilla.glb';          // cambia por el nombre real de tu archivo
   const TAMANO_PARRILA = TAMANO_MEDIO_FONDO;     // TAMAÑO: más grande = número mayor
   const POS_PARRILA_X = POS_MEDIO_FONDO_2_X;     // DERECHA (+) o IZQUIERDA (-)
-  const POS_PARRILA_Z = POS_MEDIO_FONDO_2_Z;     // MÁS ADELANTE (número menor) o MÁS ATRÁS (número mayor)
+  const POS_PARRILA_Z = 240;     // MÁS ADELANTE (número menor) o MÁS ATRÁS (número mayor)
   const GIRO_PARRILA = GIRO_MEDIO_FONDO;         // hacia dónde mira (Math.PI = media vuelta)
   const BAJAR_PARRILA = 0;
 
@@ -93,19 +97,26 @@
 
   const RUTA_VOLQUETA2 = './volqueta2.glb';
   const TAMANO_VOLQUETA2 = 19;
-  const POS_VOLQUETA2_X = 22, POS_VOLQUETA2_Z = 140;
+    const POS_VOLQUETA2_X = 22 + DESPLAZAR_DERECHA, POS_VOLQUETA2_Z = 140;
   const GIRO_VOLQUETA2 = 0;
   const BAJAR_VOLQUETA2 = 0;
 
-  // ---- Calaminas ----
+  // ---- Calaminas (a los dos costados, pegadas una tras otra, desde la entrada hacia adentro) ----
   const RUTA_CALAMINAS = './calaminas.glb';
   const RUTA_CALAMINAV = './calaminav.glb';
-  const TAMANO_CALAMINAS = 70;
-  const TAMANO_CALAMINAV = 10;
+  const TAMANO_CALAMINAS = 70;            // TAMAÑO de la calamina grande (más grande = número mayor)
+  const TAMANO_CALAMINAV = 10;            // TAMAÑO de la calamina chica
   const BAJAR_CALAMINAS = 0;
   const BAJAR_CALAMINAV = 0;
-  const X_LADO_CALAMINAS = 42;
-  const Z_CALAMINAS = [92, 116, 168, 192];
+  const X_CALAMINAS_IZQ = -42;            // DONDE va la fila de la izquierda (más negativo = más afuera)
+  const X_CALAMINAS_DER = 42 + DESPLAZAR_DERECHA;   // DONDE va la fila de la derecha (más positivo = más afuera)            // DONDE va la fila de la derecha (más positivo = más afuera)
+  const Z_INICIO_CALAMINAS = -2;          // donde EMPIEZAN las filas: justo en el modelo de la entrada (su Z es POS_ENTRADA_Z = -2)
+  const Z_FIN_CALAMINAS = 200;            // donde TERMINAN (número mayor = más calaminas hacia adentro)
+  const AJUSTE_JUNTAS_CALAMINAS = 0;  
+    const AJUSTE_JUNTAS_CALAMINAS_DER = 0;  // solo la fila derecha: negativo = más pegadas (-2, -4...), positivo = deja hueco    // 0 = pegadas por su medida real; negativo = se meten una en otra; positivo = hueco
+  const PATRON_CALAMINAS = [0, 1];        // orden de las piezas: 0 = grande, 1 = chica. Ej.: [0] = solo grandes
+  const LARGO_EN_Z_CALAMINAS = true;      // true = el lado largo de cada calamina va de adelante hacia atrás (a lo largo de la calle)
+  const ENDEREZAR_CALAMINAS = true;       // endereza el modelo si viene girado unos grados
   const GIRO_CALAMINAS = 0;
 
   // Pon MARCADORES_DEBUG en true para ver postes de colores donde van las casas nuevas
@@ -139,13 +150,13 @@
 
   // Casa roja (va por su cuenta)
   const LADO_CASA_ROJA = -1;    // -1 = lado izquierdo de la entrada, 1 = lado derecho
-  const POS_CASA_ROJA_X = -45;  // izquierda (-) o derecha (+)
+  const POS_CASA_ROJA_X = -45 - DESPLAZAR_IZQUIERDA;  // izquierda (-) o derecha (+)
   const POS_CASA_ROJA_Z = -10;  // más atrás (número menor) o más adelante (número mayor)
   const GIRO_CASA_ROJA = 0;
 
   // Casa vieja (va por su cuenta, no depende de la casa roja)
   const LADO_CASA_VIEJA = -1;   // hacia dónde crece su fila: -1 izquierda, 1 derecha
-  const POS_CASA_VIEJA_X = -58;
+  const POS_CASA_VIEJA_X = -58 - DESPLAZAR_IZQUIERDA;
   const POS_CASA_VIEJA_Z = -65;
   const GIRO_CASA_VIEJA = Math.PI;
 
@@ -257,7 +268,7 @@
       ] },
 
     { x: 9, z: 55, titulo: 'Así nacieron las cooperativas', etiqueta: 'Historia',
-      imagen: { src: 'imagenes/cooperativas.jpg', pie: 'Socios en una bocamina · actual' },
+      imagen: { src: 'imagenes/cooperativas.webp', pie: 'Socios en una bocamina · actual' },
       texto: ['Cuando el precio del estaño se desplomó en la **década de 1980**, miles de mineros despedidos ocuparon **túneles abandonados**. Así empezó el movimiento cooperativista actual.',
               'Hoy las cooperativas agrupan cerca del **8 % de la fuerza laboral** de Bolivia y aportan **la mitad de la extracción minera**.'],
       datos: [{ n: '≈8 %', t: 'de la fuerza laboral' }, { n: '≈50 %', t: 'de la extracción minera' }],
@@ -276,18 +287,34 @@
         { t: 'Municipio de Llallagua · Instituto Nacional de Estadística (INE) de Bolivia', u: 'https://www.ine.gob.bo/?p=39868' }
       ] },
 
-    { x: 9, z: 90, titulo: 'La Salvadora', etiqueta: 'Historia',
-      imagen: { src: 'imagenes/salvadora.jpg', pie: 'Simón I. Patiño · foto de archivo' },
-      texto: ['La mina se llamaba **La Salvadora** y en **1900** Simón I. Patiño halló en ella una veta riquísima de estaño.',
-              'Con los años llegó a ser uno de los **hombres más ricos del mundo**.'],
-      datos: [{ n: '1900', t: 'se halla la veta' }, { n: '1940', t: 'década en que era de los más ricos' }],
-      fuentes: [
-        { t: 'Simón Iturri Patiño · Wikipedia', u: 'https://en.wikipedia.org/wiki/Sim%C3%B3n_Iturri_Pati%C3%B1o' },
-        { t: 'Simón I. Patiño · Biografías y Vidas', u: 'https://www.biografiasyvidas.com/biografia/p/patino_simon.htm' }
-      ] },
-
+    {
+  x: 9, z: 90, titulo: 'Planta C-4', etiqueta: 'Historia',
+  imagen: {
+    src: 'imagenes/planta-c4.jpeg',
+    pie: 'Planta C-4 · Ingenio Victoria de Catavi'
+  },
+  texto: [
+    'El **3 de mayo de 1994** se consolidó la Cooperativa Multiactiva Catavi-Siglo XX Ltda., integrada por antiguos trabajadores de la Empresa Minera Catavi.',
+    'Los trabajadores consiguieron el arrendamiento de la **Planta C-4**, perteneciente a COMIBOL, para continuar la actividad minera mediante el tratamiento de colas y desmontes con contenido de estaño.',
+    'La planta tenía una capacidad aproximada de **300 toneladas de mineral por día**, convirtiéndose en una importante fuente de trabajo para las familias de Catavi.'
+  ],
+  datos: [
+    { n: '3 de mayo de 1994', t: 'fundación de la cooperativa' },
+    { n: '300 toneladas', t: 'capacidad diaria de tratamiento' }
+  ],
+  fuentes: [
+    {
+      t: 'ANF · Cooperativa de Catavi arrendó planta de procesamiento (1994)',
+      u: 'https://www.noticiasfides.com/nacional/sociedad/procesamiento-de-minerales-de-comibol-273375'
+    },
+    {
+      t: 'Estudio técnico-económico de la Planta C-4',
+      u: 'https://repositorio.uasb.edu.bo/server/api/core/bitstreams/7ff3e3d6-9262-4c6b-bc3b-f870adccd0e2/content'
+    }
+  ]
+},
     { x: -9, z: 112, titulo: 'La Voz del Minero', etiqueta: 'Dato curioso',
-      imagen: { src: 'imagenes/voz-minero.jpg', pie: 'Radio La Voz del Minero · Siglo XX' },
+      imagen: { src: 'imagenes/voz-minero.jpeg', pie: 'Radio La Voz del Minero · Siglo XX' },
       texto: ['En **1947** nació en Siglo XX la radio **La Voz del Minero**, una de las primeras radios populares de América Latina.',
               'La sostenían los propios mineros con **un día de salario al mes**.'],
       datos: [{ n: '1947', t: 'primeras transmisiones' }],
@@ -307,7 +334,7 @@
       ] },
 
     { x: -9, z: 165, titulo: 'Día del Trabajador Minero', etiqueta: 'Memoria',
-      imagen: { src: 'imagenes/dia-minero.jpg', pie: 'Monumento al Minero · Siglo XX' },
+      imagen: { src: 'imagenes/dia-minero.jpeg', pie: 'Monumento al Minero · Siglo XX' },
       texto: ['Cada **21 de diciembre** Bolivia celebra el Día del Trabajador Minero, por una ley de **1944**.',
               'Recuerda a los caídos de la **masacre de Catavi** (1942), cuando mineros y sus familias marcharon reclamando mejores salarios.'],
       datos: [{ n: '21 dic', t: 'Día del Trabajador Minero' }, { n: '1942', t: 'masacre de Catavi' }],
@@ -368,7 +395,7 @@
     RUTA_SUELO,
     (tex) => {
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-            tex.repeat.set(ANCHO_MUNDO / TAMANO_LOSETA, LARGO_MUNDO / TAMANO_LOSETA);
+      tex.repeat.set(ANCHO_MUNDO / TAMANO_LOSETA, LARGO_MUNDO / TAMANO_LOSETA);
       tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
       tex.encoding = THREE.sRGBEncoding;
       matSuelo.map = tex;
@@ -381,7 +408,7 @@
     }
   );
 
-    const suelo = new THREE.Mesh(
+  const suelo = new THREE.Mesh(
     new THREE.PlaneGeometry(ANCHO_MUNDO, LARGO_MUNDO),
     matSuelo
   );
@@ -396,6 +423,7 @@
   horizonte.rotation.x = -Math.PI / 2;
   horizonte.position.set(suelo.position.x, -0.4, suelo.position.z);
   scene.add(horizonte);
+
   // ================== FONDO DE MONTAÑAS ==================
   const matFondo = new THREE.MeshBasicMaterial({
     color: 0xffffff,
@@ -565,7 +593,7 @@
     scene.background.copy(mezcla.cielo);
     matFondo.color.copy(mezcla.tinte);
     scene.fog.color.copy(fogBase).multiply(mezcla.tinte);
-        matHorizonte.color.copy(scene.fog.color);
+    matHorizonte.color.copy(scene.fog.color);
 
     hemi.intensity = mezcla.hemi;
     sol.intensity = mezcla.sol;
@@ -919,20 +947,20 @@
       return casa;
     }
 
-    colocar(0, -DISTANCIA_CALLE, Z_CASA_IZQ, ROTACION_IZQ);
+   colocar(0, -DISTANCIA_CALLE - DESPLAZAR_IZQUIERDA, Z_CASA_IZQ, ROTACION_IZQ);
 
     colocar(
       3,
-      -DISTANCIA_CALLE,
+      -DISTANCIA_CALLE - DESPLAZAR_IZQUIERDA,
       Z_CASA_IZQ + ADELANTE_CASA_DERECHA,
       ROTACION_IZQ
     );
 
-    colocar(1, DISTANCIA_CALLE, Z_CASA_DER, ROTACION_DER);
+        colocar(1, DISTANCIA_CALLE + DESPLAZAR_DERECHA, Z_CASA_DER, ROTACION_DER);
 
     colocar(
       2,
-      DISTANCIA_CALLE - DERECHA_CASA_IZQUIERDA,
+           DISTANCIA_CALLE + DESPLAZAR_DERECHA - DERECHA_CASA_IZQUIERDA,
       Z_CASA_DER + ADELANTE_NUEVAS - ATRAS_CASA_IZQUIERDA,
       ROTACION_DER
     );
@@ -943,6 +971,7 @@
       Z_CASA_DER + ADELANTE_CASA_3,
       ROTACION_DER
     );
+      const POS_CASA_ADOBE_X = POS_ENTRADA_X + TAMANO_ENTRADA / 2 + SEPARACION_ENTRADA_ADOBE + LARGO_CASA_ADOBE / 2 + DESPLAZAR_DERECHA;
   });
 
   // ================== CASA GRANDE ==================
@@ -1084,13 +1113,13 @@
   // ================== ---TRACTOR Y VOLQUETA 2 ==================
   function cargarVehiculo(ruta, tamano, x, z, giro, bajar,vertical) {
     cargarModelo(ruta).then(function (obj) {
-     
       const tam = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
       const dimension = Math.max(tam.x, tam.z);
 
       if (dimension <= 0) {
         throw new Error('El modelo ' + ruta + ' no tiene dimensiones válidas.');
       }
+
       obj.scale.multiplyScalar(tamano / dimension);
       obj.updateMatrixWorld(true);
 
@@ -1140,10 +1169,28 @@
     cargarVehiculo(RUTA_PARRILA, TAMANO_PARRILA, POS_PARRILA_X, POS_PARRILA_Z, GIRO_PARRILA, BAJAR_PARRILA);
 
       cargarVehiculo(RUTA_BUS1, TAMANO_BUS1, POS_BUS1_X, POS_BUS1_Z, GIRO_BUS1, BAJAR_BUS1);
-  // ================== CALAMINAS (a los costados de los medioFondo) ==================
-  // Cada modelo se prepara una vez y luego se clona en cada posición.
+
+  // ================== CALAMINAS (a los dos costados, desde la entrada hacia adentro) ==================
+  // Cada modelo se prepara una vez: se endereza, se pone con su lado largo a lo largo de Z y se mide
+  // su largo REAL. Luego se pegan una tras otra, sin dejar espacios, hasta llegar al final de la fila.
   function prepararCalamina(ruta, tamano, bajar) {
     return cargarModelo(ruta).then(function (obj) {
+      const eje = new THREE.Vector3(0, 1, 0);
+
+      if (ENDEREZAR_CALAMINAS) {
+        obj.rotateOnWorldAxis(eje, anguloParaEnderezar(obj));
+        obj.updateMatrixWorld(true);
+      }
+
+      if (LARGO_EN_Z_CALAMINAS) {
+        const t0 = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
+
+        if (t0.x > t0.z) {
+          obj.rotateOnWorldAxis(eje, Math.PI / 2);
+          obj.updateMatrixWorld(true);
+        }
+      }
+
       const tam = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
       const dimension = Math.max(tam.x, tam.z);
 
@@ -1161,10 +1208,35 @@
       bajarAlSuelo(obj, bajar);
       sombras(obj, false);
 
+            const medida = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
+
+            // largo VISIBLE de la pieza (ignora puntas sueltas): del 1 % al 99 % de sus vértices en Z
+      obj.updateMatrixWorld(true);
+
+      const zs = [];
+      const vv = new THREE.Vector3();
+
+      obj.traverse(function (m) {
+        if (!m.isMesh || !m.geometry.attributes.position) return;
+
+        const pos = m.geometry.attributes.position;
+        const salto = Math.max(1, Math.floor(pos.count / 4000));
+
+        for (let i = 0; i < pos.count; i += salto) {
+          vv.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld);
+          zs.push(vv.z);
+        }
+      });
+
+      zs.sort(function (p, q) { return p - q; });
+
+      const zMin = zs[Math.floor(zs.length * 0.01)];
+      const zMax = zs[Math.floor(zs.length * 0.99)];
+
       const grupo = new THREE.Group();
       grupo.add(obj);
 
-      return grupo;
+      return { grupo: grupo, largoZ: zMax - zMin, zMin: zMin, zMax: zMax };
     });
   }
 
@@ -1172,7 +1244,7 @@
     prepararCalamina(RUTA_CALAMINAS, TAMANO_CALAMINAS, BAJAR_CALAMINAS),
     prepararCalamina(RUTA_CALAMINAV, TAMANO_CALAMINAV, BAJAR_CALAMINAV)
   ]).then(function (res) {
-    const bases = res.map(function (r, i) {
+    const piezas = res.map(function (r, i) {
       if (r.status === 'fulfilled') return r.value;
 
       const ruta = i === 0 ? RUTA_CALAMINAS : RUTA_CALAMINAV;
@@ -1183,31 +1255,40 @@
       return null;
     });
 
+    // solo las piezas del patrón que sí cargaron
+    const patron = PATRON_CALAMINAS.filter(function (k) { return piezas[k]; });
+
+    if (!patron.length) return;
+
     let colocadas = 0;
 
     [-1, 1].forEach(function (lado) {
-      Z_CALAMINAS.forEach(function (z, i) {
-        const base = bases[(i + (lado > 0 ? 1 : 0)) % 2];
+      let z = Z_INICIO_CALAMINAS;
 
-        if (!base) return;
+           for (let i = 0; z < Z_FIN_CALAMINAS && i < 400; i++) {
+        // las dos filas usan el MISMO orden de piezas
+        const pieza = piezas[patron[i % patron.length]];
+        const paso = pieza.largoZ + (lado > 0 ? AJUSTE_JUNTAS_CALAMINAS_DER : AJUSTE_JUNTAS_CALAMINAS);
 
-        const g = base.clone(true);
+        if (paso < 0.5) break;   // evita un bucle sin fin si el ajuste es demasiado negativo
 
-        g.position.set(
-          lado * (X_LADO_CALAMINAS + (i % 2) * 3),
-          0,
-          z
-        );
+        const g = pieza.grupo.clone(true);
 
-        g.rotation.y =
-          (lado > 0 ? Math.PI : 0) +
-          GIRO_CALAMINAS +
-          (((i * 37) % 10) - 5) * 0.02;
+        // dónde empieza lo visible de la pieza respecto a su centro (cambia si va girada media vuelta)
+        const inicio = lado > 0 ? -pieza.zMax : pieza.zMin;
+
+        g.position.set(lado < 0 ? X_CALAMINAS_IZQ : X_CALAMINAS_DER, 0, z - inicio);
+        g.rotation.y = (lado > 0 ? Math.PI : 0) + GIRO_CALAMINAS;   // las dos filas miran hacia la calle
 
         scene.add(g);
         colocadas++;
-      });
+        z += paso;
+      }
     });
+
+    console.log('[Desierto] Calaminas colocadas:', colocadas,
+      '| largo grande:', piezas[0] ? piezas[0].largoZ.toFixed(1) : '-',
+      '| largo chica:', piezas[1] ? piezas[1].largoZ.toFixed(1) : '-');
 
     estado('calaminas: ' + colocadas + ' colocadas', colocadas > 0);
   });
@@ -1708,7 +1789,7 @@
 
 
   // ================== VOLQUETAS AL COSTADO DE LA CASA DE AFUERA ==================
-  // El modelo se carga una sola vez y se repite en fila, hacia el mismo lado que crece la fila de casas.
+  // El modelo se carga una sola vez y se repite en fila, hacia el lado que indica LADO_VOLQUETAS_AFUERA.
   cargarModelo(RUTA_VOLQUETAS_AFUERA).then(function (obj) {
     const tam = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
     const dimension = Math.max(tam.x, tam.z);
@@ -1734,7 +1815,7 @@
       const volqueta = base.clone(true);
 
       volqueta.position.set(
-               POS_VOLQUETAS_AFUERA_X + LADO_VOLQUETAS_AFUERA * i * SEPARACION_VOLQUETAS_AFUERA,
+        POS_VOLQUETAS_AFUERA_X + LADO_VOLQUETAS_AFUERA * i * SEPARACION_VOLQUETAS_AFUERA,
         0,
         POS_VOLQUETAS_AFUERA_Z
       );
@@ -1828,7 +1909,6 @@
   });
 
   let angulo = 0;
-
 
   // ================== TARJETAS DE INFORMACIÓN: ESTILOS ==================
   const estilo = document.createElement('style');
@@ -2446,7 +2526,7 @@
       const dx = Math.sin(angulo);
       const dz = Math.cos(angulo);
 
-            jugador.position.x = THREE.MathUtils.clamp(
+      jugador.position.x = THREE.MathUtils.clamp(
         jugador.position.x + dx * avance * VELOCIDAD * dt,
         MUNDO_X_MIN + MARGEN_BORDE,
         MUNDO_X_MAX - MARGEN_BORDE
@@ -2653,6 +2733,7 @@
         for (const k in teclas) teclas[k] = false;
       }
     },
+
     setTema(nombre) {
       tema = TEMAS[nombre] || TEMAS.claro;
     }

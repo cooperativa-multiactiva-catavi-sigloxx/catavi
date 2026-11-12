@@ -178,6 +178,22 @@
     .hero .msg p:nth-of-type(2) { display:none; }
     #escudo { right:auto; left:50%; top:auto; bottom:14px; transform:translateX(-50%); width:min(56vw,280px); height:min(56vw,280px); }
   }
+
+  /* Controles extra: pantalla completa y música ambiental */
+  .btn-fullscreen { width:38px;height:38px;display:flex;align-items:center;justify-content:center;border:0;border-radius:50%;background:transparent;color:#fff;cursor:pointer; }
+  .btn-fullscreen:hover { background:rgba(255,255,255,.18); }
+  .btn-fullscreen svg { width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round; }
+  .audio-controles { padding:12px;color:#fff;font-family:'Lato','Segoe UI',Arial,sans-serif; }
+  .audio-titulo { display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px; }
+  .audio-titulo b { font:500 14px 'Oswald','Arial Narrow',sans-serif;letter-spacing:.6px;text-transform:uppercase; }
+  .audio-controles small { color:rgba(255,255,255,.72);font-size:11px; }
+  .audio-volumen { display:flex;align-items:center;gap:10px; }
+  .audio-volumen input { flex:1;min-width:0;accent-color:#9fd3ff;cursor:pointer; }
+  .audio-volumen output { min-width:34px;text-align:right;color:#fff;font-size:12px; }
+  .btn-mute { width:100%;margin-top:12px;padding:9px 12px;border:1px solid rgba(255,255,255,.16);border-radius:9px;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font:500 13px 'Oswald','Arial Narrow',sans-serif;letter-spacing:.5px;text-transform:uppercase; }
+  .btn-mute:hover { background:rgba(255,255,255,.16); }
+  @media (max-width:520px) { .barra{gap:1px}.tab{padding:9px 9px;gap:5px;font-size:12px}.btn-fullscreen{width:32px;height:34px} }
+
 </style>
 </head>
 <body>
@@ -209,6 +225,14 @@
       <svg id="icono-tiempo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
       <span>Momento</span>
       <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <button type="button" class="tab" id="tab-audio" aria-expanded="false" aria-controls="nav-panel">
+      <svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+      <span>Audio</span>
+      <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <button type="button" class="btn-fullscreen" id="btn-fullscreen" aria-label="Pantalla completa" title="Pantalla completa">
+      <svg id="icono-fullscreen" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
     </button>
   </div>
 
@@ -249,11 +273,23 @@
           <span class="check"></span>
         </button>
       </div>
+      <div class="vista" id="vista-audio">
+        <div class="audio-controles">
+          <div class="audio-titulo"><b>Música ambiental</b><small id="estado-audio">Suave · 12%</small></div>
+          <div class="audio-volumen">
+            <label for="volumen-musica" aria-label="Volumen">♪</label>
+            <input id="volumen-musica" type="range" min="0" max="100" value="12">
+            <output id="valor-volumen" for="volumen-musica">12%</output>
+          </div>
+          <button type="button" class="btn-mute" id="btn-mute">Silenciar música</button>
+        </div>
+      </div>
 
     </div>
   </div>
 </div>
 
+<audio id="musica-mundo" src="./musica.mp3" preload="none" loop></audio>
 <canvas id="escudo"></canvas>
 <div class="desierto-hint" id="desierto-hint"><span class="tecla">W</span><span class="tecla">A</span><span class="tecla">S</span><span class="tecla">D</span><span>o flechas para caminar</span></div>
 
@@ -296,8 +332,8 @@
     var panel = document.getElementById('nav-panel');
     var nub = document.getElementById('nub');
     var iconoTiempo = document.getElementById('icono-tiempo');
-    var tabs = [document.getElementById('tab-secciones'), document.getElementById('tab-tiempo')];
-    var vistas = [document.getElementById('vista-secciones'), document.getElementById('vista-tiempo')];
+    var tabs = [document.getElementById('tab-secciones'), document.getElementById('tab-tiempo'), document.getElementById('tab-audio')];
+    var vistas = [document.getElementById('vista-secciones'), document.getElementById('vista-tiempo'), document.getElementById('vista-audio')];
     var sel = -1;          // pestaña abierta (-1 = ninguna)
     var tipo = 'mouse';    // cómo se usó por última vez: 'mouse', 'touch', 'pen' o 'teclado'
 
@@ -374,6 +410,74 @@
         op.blur();
       });
     });
+  })();
+
+  // Música ambiental: empieza al entrar a Explorar, con volumen inicial suave.
+  (function () {
+    var audio = document.getElementById('musica-mundo');
+    var slider = document.getElementById('volumen-musica');
+    var valor = document.getElementById('valor-volumen');
+    var estado = document.getElementById('estado-audio');
+    var mute = document.getElementById('btn-mute');
+    var volumenAnterior = 0.12;
+    audio.volume = 0.12;
+
+    function actualizarControles() {
+      var porcentaje = Math.round(audio.volume * 100);
+      valor.textContent = porcentaje + '%';
+      estado.textContent = audio.muted ? 'Silenciada' : 'Suave · ' + porcentaje + '%';
+      mute.textContent = audio.muted ? 'Activar sonido' : 'Silenciar música';
+      slider.value = audio.muted ? 0 : porcentaje;
+    }
+    slider.addEventListener('input', function () {
+      var nuevo = Number(slider.value) / 100;
+      audio.volume = nuevo;
+      audio.muted = nuevo === 0;
+      if (nuevo > 0) volumenAnterior = nuevo;
+      actualizarControles();
+    });
+    mute.addEventListener('click', function () {
+      if (audio.muted || audio.volume === 0) {
+        audio.muted = false;
+        audio.volume = volumenAnterior || 0.12;
+      } else {
+        volumenAnterior = audio.volume;
+        audio.muted = true;
+      }
+      actualizarControles();
+    });
+    document.getElementById('btn-explorar').addEventListener('click', function () {
+      audio.play().catch(function () { estado.textContent = 'Pulsa Audio para activar'; });
+    });
+    document.getElementById('btn-volver').addEventListener('click', function () {
+      audio.pause();
+      audio.currentTime = 0;
+    });
+    actualizarControles();
+  })();
+
+  // Pantalla completa.
+  (function () {
+    var boton = document.getElementById('btn-fullscreen');
+    var icono = document.getElementById('icono-fullscreen');
+    function actualizarIcono() {
+      var activo = !!document.fullscreenElement;
+      boton.title = activo ? 'Salir de pantalla completa' : 'Pantalla completa';
+      boton.setAttribute('aria-label', boton.title);
+      icono.innerHTML = activo
+        ? '<path d="M8 3v5H3M16 3v5h5M3 16h5v5M21 16h-5v5"/>'
+        : '<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/>';
+    }
+    boton.addEventListener('click', function () {
+      if (!document.fullscreenElement) {
+        var solicitud = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+        if (solicitud && solicitud.catch) solicitud.catch(function () {});
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    });
+    document.addEventListener('fullscreenchange', actualizarIcono);
+    actualizarIcono();
   })();
 </script>
 </body>
